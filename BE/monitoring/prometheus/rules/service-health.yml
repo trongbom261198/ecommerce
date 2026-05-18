@@ -1,0 +1,38 @@
+groups:
+  - name: spring-services
+    interval: 15s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="spring-services"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.service }} is DOWN"
+          description: "Prometheus cannot scrape {{ $labels.service }} ({{ $labels.instance }}) for 1 minute."
+
+      - alert: HighHttp5xxRate
+        expr: |
+          sum by (service) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            /
+          sum by (service) (rate(http_server_requests_seconds_count[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} 5xx error rate > 5%"
+          description: "{{ $labels.service }} returning >5% 5xx responses over last 5 minutes."
+
+      - alert: JvmHeapNearLimit
+        expr: |
+          jvm_memory_used_bytes{area="heap"}
+            /
+          jvm_memory_max_bytes{area="heap"}
+          > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.application }} JVM heap >90% used"
+          description: "{{ $labels.application }} ({{ $labels.id }}) heap above 90% for 10 minutes — OOM risk."

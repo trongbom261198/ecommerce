@@ -1,0 +1,83 @@
+{
+    "mcpServers": {
+        "context7": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "npx",
+                "-y",
+                "@upstash/context7-mcp",
+                "--api-key",
+                "YOUR_API_KEY"
+            ]
+        },
+        "dbhub-postgres-npx": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "npx",
+                "-y",
+                "@bytebase/dbhub",
+                "--transport",
+                "stdio",
+                "--dsn",
+                "postgresql://postgres:123456@10.15.71.20:5432/doc_collab",
+                "--port",
+                "8081"
+            ],
+            "env": {},
+            "working_directory": null
+        },
+        "chrome-devtools": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "npx",
+                "-y",
+                "chrome-devtools-mcp@latest"
+            ]
+        },
+        "sequential-thinking": {
+            "command": "cmd",
+            "args": [
+                "/c",
+                "npx",
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ]
+        },
+        "obsidian": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "-e",
+                "OBSIDIAN_HOST",
+                "-e",
+                "OBSIDIAN_API_KEY",
+                "mcp/obsidian"
+            ],
+            "env": {
+                "OBSIDIAN_HOST": "host.docker.internal",
+                "OBSIDIAN_API_KEY": "00c113ebf9bb022c989984ecfb1948b7c5d57dc05350244b68e1f2d37bed1f49"
+            }
+        },
+		"mssql": {
+		"command": "cmd",
+		"args": [
+		  "/c",
+		  "npx",
+		  "-y",
+		  "mssql-mcp-node"
+		],
+		"env": {
+		  "MSSQL_FILE_DATABASE": "FILE",
+		  "MSSQL_FILE_PASSWORD": "123456",
+		  "MSSQL_FILE_USER": "sa",
+		  "MSSQL_FILE_PORT": "1433",
+		  "MSSQL_FILE_SERVER": "10.14.142.30\\BTP"
+		}
+	  }
+    }
+}

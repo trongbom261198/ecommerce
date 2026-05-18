@@ -1,0 +1,12 @@
+### Sensitive local overrides — never commit
+**/application-local.yml
+**/.env
+**/.env.local
+
+### Build output
+**/target/
+**/*.class
+
+### IDE
+**/.idea/
+**/*.iml

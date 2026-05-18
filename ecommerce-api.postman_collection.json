@@ -1,0 +1,858 @@
+{
+  "info": {
+    "name": "E-Commerce API",
+    "_postman_id": "ecommerce-api-collection",
+    "description": "Complete API collection for E-Commerce + Logistics microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080/api/v1", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "user_id", "value": "", "type": "string" },
+    { "key": "product_id", "value": "", "type": "string" },
+    { "key": "category_id", "value": "", "type": "string" },
+    { "key": "sku_id", "value": "", "type": "string" },
+    { "key": "order_id", "value": "", "type": "string" },
+    { "key": "address_id", "value": "", "type": "string" },
+    { "key": "warehouse_id", "value": "", "type": "string" },
+    { "key": "shipment_id", "value": "", "type": "string" },
+    { "key": "fulfillment_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"phone\": \"0901234567\",\n  \"password\": \"Password@123\",\n  \"fullName\": \"Nguyen Van A\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data) {",
+                  "  pm.collectionVariables.set('token', res.data.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', res.data.refreshToken);",
+                  "  pm.collectionVariables.set('user_id', res.data.userId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data) {",
+                  "  pm.collectionVariables.set('token', res.data.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', res.data.refreshToken);",
+                  "  pm.collectionVariables.set('user_id', res.data.userId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ecommerce.com\",\n  \"password\": \"Admin@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data) {",
+                  "  pm.collectionVariables.set('token', res.data.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', res.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/me", "host": ["{{base_url}}"], "path": ["users", "me"] }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/users/me", "host": ["{{base_url}}"], "path": ["users", "me"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van B\",\n  \"phone\": \"0909999999\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/users/me/password", "host": ["{{base_url}}"], "path": ["users", "me", "password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password@123\",\n  \"newPassword\": \"NewPassword@456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Addresses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/me/addresses", "host": ["{{base_url}}"], "path": ["users", "me", "addresses"] }
+          }
+        },
+        {
+          "name": "Add Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set('address_id', res.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/users/me/addresses", "host": ["{{base_url}}"], "path": ["users", "me", "addresses"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Nhà riêng\",\n  \"recipientName\": \"Nguyen Van A\",\n  \"phone\": \"0901234567\",\n  \"streetAddress\": \"123 Nguyen Trai\",\n  \"ward\": \"Phuong 2\",\n  \"district\": \"Quan 5\",\n  \"province\": \"TP. Ho Chi Minh\",\n  \"country\": \"VN\",\n  \"postalCode\": \"70000\",\n  \"isDefault\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/users/me/addresses/{{address_id}}", "host": ["{{base_url}}"], "path": ["users", "me", "addresses", "{{address_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Văn phòng\",\n  \"recipientName\": \"Nguyen Van A\",\n  \"phone\": \"0901234567\",\n  \"streetAddress\": \"456 Le Loi\",\n  \"ward\": \"Ben Nghe\",\n  \"district\": \"Quan 1\",\n  \"province\": \"TP. Ho Chi Minh\",\n  \"country\": \"VN\",\n  \"postalCode\": \"70000\",\n  \"isDefault\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/me/addresses/{{address_id}}", "host": ["{{base_url}}"], "path": ["users", "me", "addresses", "{{address_id}}"] }
+          }
+        },
+        {
+          "name": "Set Default Address",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/users/me/addresses/{{address_id}}/default", "host": ["{{base_url}}"], "path": ["users", "me", "addresses", "{{address_id}}", "default"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "Get Category By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/categories/{{category_id}}", "host": ["{{base_url}}"], "path": ["categories", "{{category_id}}"] }
+          }
+        },
+        {
+          "name": "Get Products In Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/categories/{{category_id}}/products?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["categories", "{{category_id}}", "products"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Category (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set('category_id', res.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Điện thoại\",\n  \"slug\": \"dien-thoai\",\n  \"description\": \"Danh mục điện thoại di động\",\n  \"sortOrder\": 1,\n  \"active\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Category (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/{{category_id}}", "host": ["{{base_url}}"], "path": ["categories", "{{category_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Điện thoại di động\",\n  \"slug\": \"dien-thoai-di-dong\",\n  \"description\": \"Danh mục điện thoại di động - cập nhật\",\n  \"sortOrder\": 1,\n  \"active\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "brand", "value": "", "disabled": true },
+                { "key": "minPrice", "value": "", "disabled": true },
+                { "key": "maxPrice", "value": "", "disabled": true },
+                { "key": "sort", "value": "createdAt", "disabled": true },
+                { "key": "sortDir", "value": "desc", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products?q=iphone&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "q", "value": "iphone" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Products By Category + Price",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products?category={{category_id}}&minPrice=1000000&maxPrice=50000000&page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "category", "value": "{{category_id}}" },
+                { "key": "minPrice", "value": "1000000" },
+                { "key": "maxPrice", "value": "50000000" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}"] }
+          }
+        },
+        {
+          "name": "Get Product SKUs",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/products/{{product_id}}/skus", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}", "skus"] }
+          }
+        },
+        {
+          "name": "Create Product (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set('product_id', res.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/products", "host": ["{{base_url}}"], "path": ["products"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{category_id}}\",\n  \"name\": \"iPhone 16 Pro Max\",\n  \"description\": \"iPhone 16 Pro Max 256GB - chip A18 Pro, camera 48MP\",\n  \"brand\": \"Apple\",\n  \"basePrice\": 33990000,\n  \"status\": \"ACTIVE\",\n  \"images\": [],\n  \"attributes\": {\n    \"os\": \"iOS 18\",\n    \"chip\": \"A18 Pro\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Product (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{category_id}}\",\n  \"name\": \"iPhone 16 Pro Max (Updated)\",\n  \"description\": \"Mô tả cập nhật\",\n  \"brand\": \"Apple\",\n  \"basePrice\": 32990000,\n  \"status\": \"ACTIVE\",\n  \"images\": [],\n  \"attributes\": {\n    \"os\": \"iOS 18\",\n    \"chip\": \"A18 Pro\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Product (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}"] }
+          }
+        },
+        {
+          "name": "Upload Product Image (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.url) console.log('Image URL:', res.data.url);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/products/upload-image", "host": ["{{base_url}}"], "path": ["products", "upload-image"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "SKUs",
+      "item": [
+        {
+          "name": "Create SKU (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set('sku_id', res.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}/skus", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}", "skus"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCode\": \"IP16PM-256-BLK\",\n  \"variantName\": \"256GB - Đen\",\n  \"price\": 33990000,\n  \"costPrice\": 28000000,\n  \"weightGrams\": 227,\n  \"active\": true,\n  \"attributes\": {\n    \"storage\": \"256GB\",\n    \"color\": \"Titan Đen\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update SKU (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Role", "value": "ADMIN" }
+            ],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}/skus/{{sku_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}", "skus", "{{sku_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuCode\": \"IP16PM-256-BLK\",\n  \"variantName\": \"256GB - Đen (updated)\",\n  \"price\": 32990000,\n  \"costPrice\": 28000000,\n  \"weightGrams\": 227,\n  \"active\": true,\n  \"attributes\": {\n    \"storage\": \"256GB\",\n    \"color\": \"Titan Đen\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/cart", "host": ["{{base_url}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Add Item To Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/cart/items", "host": ["{{base_url}}"], "path": ["cart", "items"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuId\": \"{{sku_id}}\",\n  \"productId\": \"{{product_id}}\",\n  \"productName\": \"iPhone 16 Pro Max\",\n  \"skuCode\": \"IP16PM-256-BLK\",\n  \"variantName\": \"256GB - Đen\",\n  \"quantity\": 1,\n  \"unitPrice\": 33990000,\n  \"images\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/cart/items/{{sku_id}}", "host": ["{{base_url}}"], "path": ["cart", "items", "{{sku_id}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/cart/items/{{sku_id}}", "host": ["{{base_url}}"], "path": ["cart", "items", "{{sku_id}}"] }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/cart", "host": ["{{base_url}}"], "path": ["cart"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Checkout (Create Order)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) pm.collectionVariables.set('order_id', res.data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders", "host": ["{{base_url}}"], "path": ["orders"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"{{address_id}}\",\n  \"paymentMethod\": \"COD\",\n  \"notes\": \"Giao giờ hành chính\",\n  \"warehouseId\": \"{{warehouse_id}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Order By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}", "host": ["{{base_url}}"], "path": ["orders", "{{order_id}}"] }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}/cancel", "host": ["{{base_url}}"], "path": ["orders", "{{order_id}}", "cancel"] }
+          }
+        },
+        {
+          "name": "Get Order Tracking",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-User-Id", "value": "{{user_id}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders/{{order_id}}/tracking", "host": ["{{base_url}}"], "path": ["orders", "{{order_id}}", "tracking"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Get Inventory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/inventory?page=0&size=20",
+              "host": ["{{base_url}}"],
+              "path": ["inventory"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "skuId", "value": "{{sku_id}}", "disabled": true },
+                { "key": "warehouseId", "value": "{{warehouse_id}}", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Adjust Stock (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/inventory/adjust", "host": ["{{base_url}}"], "path": ["inventory", "adjust"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skuId\": \"{{sku_id}}\",\n  \"warehouseId\": \"{{warehouse_id}}\",\n  \"quantityDelta\": 100,\n  \"reason\": \"Nhập hàng mới\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reserve Stock (Internal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/inventory/reserve", "host": ["{{base_url}}"], "path": ["inventory", "reserve"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"items\": [\n    {\n      \"skuId\": \"{{sku_id}}\",\n      \"warehouseId\": \"{{warehouse_id}}\",\n      \"quantity\": 1\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Release Stock (Internal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/inventory/release", "host": ["{{base_url}}"], "path": ["inventory", "release"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"items\": [\n    {\n      \"skuId\": \"{{sku_id}}\",\n      \"warehouseId\": \"{{warehouse_id}}\",\n      \"quantity\": 1\n    }\n  ],\n  \"fulfillmentComplete\": false\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Warehouses",
+      "item": [
+        {
+          "name": "List Warehouses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/warehouses", "host": ["{{base_url}}"], "path": ["warehouses"] }
+          }
+        },
+        {
+          "name": "Get Warehouse By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/warehouses/{{warehouse_id}}", "host": ["{{base_url}}"], "path": ["warehouses", "{{warehouse_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "Get Shipment By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/shipments/{{shipment_id}}", "host": ["{{base_url}}"], "path": ["shipments", "{{shipment_id}}"] }
+          }
+        },
+        {
+          "name": "Get Shipment Tracking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/shipments/{{shipment_id}}/tracking", "host": ["{{base_url}}"], "path": ["shipments", "{{shipment_id}}", "tracking"] }
+          }
+        },
+        {
+          "name": "Update Shipment Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/shipments/{{shipment_id}}/status", "host": ["{{base_url}}"], "path": ["shipments", "{{shipment_id}}", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PICKED_UP\",\n  \"location\": \"Kho Bình Dương\",\n  \"notes\": \"Đã lấy hàng thành công\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Optimize Route",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/shipments/{{shipment_id}}/optimize-route", "host": ["{{base_url}}"], "path": ["shipments", "{{shipment_id}}", "optimize-route"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fulfillment",
+      "item": [
+        {
+          "name": "List Fulfillment Tasks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/fulfillment/tasks",
+              "host": ["{{base_url}}"],
+              "path": ["fulfillment", "tasks"],
+              "query": [
+                { "key": "status", "value": "PENDING", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Fulfillment Task By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/fulfillment/tasks/{{fulfillment_id}}", "host": ["{{base_url}}"], "path": ["fulfillment", "tasks", "{{fulfillment_id}}"] }
+          }
+        },
+        {
+          "name": "Update Task Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/fulfillment/tasks/{{fulfillment_id}}/status", "host": ["{{base_url}}"], "path": ["fulfillment", "tasks", "{{fulfillment_id}}", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PROCESSING\",\n  \"assignedTo\": \"{{user_id}}\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

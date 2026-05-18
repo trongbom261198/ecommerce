@@ -1,0 +1,38 @@
+# Sensitive / local config
+.env
+.env.*
+!.env.example
+**/application-local.yml
+
+# Claude & OpenCode IDE tools (contains API keys, local config)
+.claude/
+.opencode/
+
+# Node
+node_modules/
+dist/
+.next/
+build/
+
+# Java / Maven
+**/target/
+**/*.class
+**/*.jar
+!**/test*.jar
+
+# IDE
+**/.idea/
+**/*.iml
+.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temp
+*.tmp
+*.bak

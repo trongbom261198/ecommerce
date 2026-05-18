@@ -1,0 +1,3 @@
+ALTER TABLE chat_rooms
+    ADD COLUMN IF NOT EXISTS contact_name  VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(20);

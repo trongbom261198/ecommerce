@@ -1,0 +1,4 @@
+cd BE && docker-compose up -d   # khởi động toàn bộ infra
+mvn clean install -pl common    # build common trước
+mvn spring-boot:run -pl user-service   # chạy từng service
+cd FE && npm install && npm run dev    # React app tại localhost:5173

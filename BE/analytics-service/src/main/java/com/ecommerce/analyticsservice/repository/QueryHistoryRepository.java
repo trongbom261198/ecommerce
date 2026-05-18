@@ -1,0 +1,13 @@
+package com.ecommerce.analyticsservice.repository;
+
+import com.ecommerce.analyticsservice.domain.QueryHistory;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface QueryHistoryRepository extends JpaRepository<QueryHistory, UUID> {
+
+    List<QueryHistory> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
+}

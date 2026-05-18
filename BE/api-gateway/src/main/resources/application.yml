@@ -1,0 +1,142 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: analytics-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/v1/analytics, /api/v1/analytics/**
+        - id: websocket-order-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/ws, /ws/**
+        - id: admin-chat-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/admin/chat, /api/v1/admin/chat/**
+        - id: chat-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/chat, /api/v1/chat/**
+        - id: admin-flash-sale-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/admin/flash-sales, /api/v1/admin/flash-sales/**
+        - id: flash-sale-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/flash-sales, /api/v1/flash-sales/**
+        - id: admin-order-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/admin/orders, /api/v1/admin/orders/**
+        - id: admin-user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/admin/users, /api/v1/admin/users/**, /api/v1/admin/stats
+        - id: admin-product-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/admin/products, /api/v1/admin/products/**
+        - id: admin-inventory-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/admin/inventory, /api/v1/admin/inventory/**
+        - id: oauth2-user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/oauth2/**, /login/oauth2/**
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**
+        - id: product-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/products, /api/v1/products/**, /api/v1/categories, /api/v1/categories/**
+        - id: payment-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/payments/**
+        - id: order-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/orders/**, /api/v1/cart/**
+        - id: inventory-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v1/inventory/**
+        - id: delivery-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/v1/shipments/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+  codec:
+    max-in-memory-size: 10MB
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+app:
+  jwt:
+    secret: "your-256-bit-secret-key-change-in-production-must-be-at-least-256-bits"
+    expire-ms: 900000  # 15 min
+  public-paths:
+    - "/api/v1/auth/register"
+    - "/api/v1/auth/login"
+    - "/api/v1/auth/refresh"
+    - "/api/v1/auth/forgot-password"
+    - "/api/v1/auth/reset-password"
+    - "/api/v1/products"
+    - "/api/v1/products/**"
+    - "/api/v1/categories"
+    - "/api/v1/categories/**"
+    - "/api/v1/flash-sales"
+    - "/api/v1/flash-sales/**"
+    - "/api/v1/chat/config"
+    - "/ws"
+    - "/ws/**"
+    - "/actuator/**"
+    - "/*/v3/api-docs"
+    - "/*/swagger-ui/**"
+    - "/api/v1/payments/vnpay/ipn"
+    - "/api/v1/payments/vnpay/return"
+    - "/oauth2/**"
+    - "/login/oauth2/**"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true

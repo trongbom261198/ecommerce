@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS File Manager — Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'Fira Code', 'SF Mono', Consolas, monospace;
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface-elevated: #e8eef4;
+    --border: rgba(30, 60, 100, 0.10);
+    --text: #1a2a3a;
+    --text-dim: #5a7090;
+    --primary: #1a5fa8;
+    --primary-dim: rgba(26, 95, 168, 0.08);
+    --secondary: #0d7a3e;
+    --tertiary: #b8860b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1421; --surface: #111d2e; --surface-elevated: #162438;
+      --border: rgba(100, 160, 220, 0.12);
+      --text: #c8d8e8; --text-dim: #8090a8;
+      --primary: #4a90d9; --primary-dim: rgba(74, 144, 217, 0.14);
+      --secondary: #50c878; --tertiary: #d4a73a;
+    }
+  }
+  [data-theme="dark"] {
+    --bg: #0d1421; --surface: #111d2e; --surface-elevated: #162438;
+    --border: rgba(100, 160, 220, 0.12);
+    --text: #c8d8e8; --text-dim: #8090a8;
+    --primary: #4a90d9; --primary-dim: rgba(74, 144, 217, 0.14);
+    --secondary: #50c878; --tertiary: #d4a73a;
+  }
+
+  .theme-toggle {
+    position: fixed; top: 16px; right: 16px; z-index: 300;
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+  .theme-toggle:hover { color: var(--text); }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--bg);
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--text);
+    font-family: var(--font-body);
+    padding: 56px 40px;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.4s ease-out both; animation-delay: calc(var(--i, 0) * 0.08s); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; }
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--primary);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::before {
+    content: ""; width: 10px; height: 10px;
+    background: var(--primary); border-radius: 2px;
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+    text-wrap: balance;
+  }
+  .subtitle {
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    margin-bottom: 44px;
+  }
+
+  /* MERMAID */
+  .mermaid-wrap {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 36px;
+    overflow: auto;
+    margin-bottom: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 420px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+  .zoom-controls {
+    position: absolute; top: 10px; right: 10px;
+    display: flex; gap: 2px; z-index: 10;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px;
+  }
+  .zoom-controls button {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    color: var(--text-dim);
+    font-family: var(--font-mono); font-size: 14px;
+    cursor: pointer; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .zoom-controls button:hover { background: var(--border); color: var(--text); }
+  .mermaid-wrap { cursor: grab; }
+  .mermaid-wrap.is-panning { cursor: grabbing; user-select: none; }
+
+  .diagram-shell { position: relative; margin-bottom: 12px; }
+  .mermaid-viewport {
+    position: relative; overflow: hidden;
+    width: 100%; height: 100%; min-height: 340px;
+  }
+  .mermaid-canvas { position: absolute; top: 0; left: 0; }
+  .zoom-label {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--text-dim); padding: 0 6px; white-space: nowrap;
+  }
+
+  .mermaid .nodeLabel { font-family: var(--font-body) !important; font-size: 18px !important; font-weight: 500 !important; }
+  .mermaid .edgeLabel { font-family: var(--font-mono) !important; font-size: 13px !important; }
+  .mermaid .cluster rect { rx: 14px; ry: 14px; }
+  .mermaid .node rect { stroke-width: 2px !important; rx: 8px !important; ry: 8px !important; }
+  .mermaid .edgePaths path { stroke-width: 2px !important; }
+
+  /* STEPS STRIP */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    position: relative;
+  }
+  .step__num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--primary);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .step__title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .step__body {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* STORAGE CARDS */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 22px;
+    border-top: 3px solid var(--primary);
+  }
+  .card--green { border-top-color: var(--secondary); }
+  .card--amber { border-top-color: var(--tertiary); }
+  .card__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .card__title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .card__tagline { font-size: 13px; color: var(--text-dim); font-style: italic; margin-bottom: 14px; }
+  .card__body { font-size: 13.5px; color: var(--text-dim); line-height: 1.6; }
+  .card__body code {
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--primary-dim); color: var(--primary);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .card__does {
+    list-style: none; padding: 0; margin: 0 0 12px;
+  }
+  .card__does li {
+    position: relative;
+    padding: 6px 0 6px 18px;
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+    border-bottom: 1px dashed var(--border);
+  }
+  .card__does li:last-child { border-bottom: none; }
+  .card__does li::before {
+    content: "";
+    position: absolute; left: 0; top: 14px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--primary);
+  }
+  .card--green .card__does li::before { background: var(--secondary); }
+  .card--amber .card__does li::before { background: var(--tertiary); }
+  .card__sub {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--text-dim); display: block; margin-top: 2px;
+  }
+
+  @media (max-width: 900px) {
+    .steps { grid-template-columns: 1fr 1fr; }
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    body { padding: 24px 16px; }
+    h1 { font-size: 30px; }
+    .mermaid-wrap { padding: 24px 14px; }
+    .steps { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme"></button>
+<script>
+(function() {
+  var t = document.getElementById('themeToggle');
+  var s = localStorage.getItem('theme');
+  var i = s || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  if (s) document.documentElement.setAttribute('data-theme', i);
+  t.textContent = i === 'dark' ? '\u2600' : '\u263E';
+  t.addEventListener('click', function() {
+    var c = document.documentElement.getAttribute('data-theme')
+      || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var n = c === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', n);
+    localStorage.setItem('theme', n);
+    t.textContent = n === 'dark' ? '\u2600' : '\u263E';
+  });
+})();
+</script>
+
+<div class="container">
+
+  <div class="section-label animate" style="--i:0">workflow &middot; overview</div>
+  <h1 class="animate" style="--i:1">FIS File Manager</h1>
+  <p class="subtitle animate" style="--i:2">one api &middot; three storage backends &middot; deduplicated by content hash</p>
+
+  <section class="diagram-shell animate" style="--i:3">
+    <div class="mermaid-wrap">
+      <div class="zoom-controls">
+        <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+        <button type="button" data-action="zoom-out" title="Zoom out">&minus;</button>
+        <button type="button" data-action="zoom-fit" title="Fit">&#8634;</button>
+        <button type="button" data-action="zoom-expand" title="Open full size">&#x26F6;</button>
+        <span class="zoom-label">Loading...</span>
+      </div>
+      <div class="mermaid-viewport">
+        <div class="mermaid mermaid-canvas"></div>
+      </div>
+    </div>
+    <script type="text/plain" class="diagram-source">
+      flowchart LR
+        CLIENT["External Service<br/>(A / B / C)"]:::client
+        API["File Manager API<br/>auth &middot; dedup &middot; lifecycle"]:::api
+        MINIO[("MinIO<br/>file bytes")]:::storage
+        SQL[("SQL Server<br/>metadata + refs")]:::storage
+        REDIS[("Redis<br/>locks + leader")]:::storage
+
+        CLIENT -- "X-Api-Key" --> API
+        API -- "put / get object" --> MINIO
+        API -- "file + reference rows" --> SQL
+        API -- "dedup &amp; cleanup locks" --> REDIS
+
+        classDef client fill:#e8eef4,stroke:#1a5fa8,stroke-width:2.5px,color:#1a2a3a
+        classDef api fill:#1a5fa8,stroke:#1a5fa8,stroke-width:2.5px,color:#ffffff
+        classDef storage fill:#ffffff,stroke:#5a7090,stroke-width:2px,color:#1a2a3a
+    </script>
+  </section>
+
+  <div class="section-label animate" style="--i:4">upload &middot; happy path</div>
+  <div class="steps animate" style="--i:5">
+    <div class="step">
+      <div class="step__num">01</div>
+      <div class="step__title">Authenticate</div>
+      <div class="step__body">HMAC-SHA256 on <code>X-Api-Key</code>; resolve ServiceId.</div>
+    </div>
+    <div class="step">
+      <div class="step__num">02</div>
+      <div class="step__title">Hash &amp; lock</div>
+      <div class="step__body">Stream SHA-256; acquire Redis <code>dedup:{hash}</code>.</div>
+    </div>
+    <div class="step">
+      <div class="step__num">03</div>
+      <div class="step__title">Store bytes</div>
+      <div class="step__body">Reuse existing object if hash matches, else PUT to MinIO.</div>
+    </div>
+    <div class="step">
+      <div class="step__num">04</div>
+      <div class="step__title">Record metadata</div>
+      <div class="step__body">Insert <code>File</code> + <code>FileReference</code>; confirm atomically.</div>
+    </div>
+    <div class="step">
+      <div class="step__num">05</div>
+      <div class="step__title">Return</div>
+      <div class="step__body"><code>201 Created</code> with <code>fileId</code>, hash, size.</div>
+    </div>
+  </div>
+
+  <div class="section-label animate" style="--i:6">what gets stored where</div>
+  <div class="grid animate" style="--i:7">
+
+    <div class="card">
+      <div class="card__label">MinIO &middot; S3 storage</div>
+      <div class="card__title">File bytes</div>
+      <div class="card__tagline">Holds the actual file content &mdash; nothing else.</div>
+      <ul class="card__does">
+        <li>
+          Stores binary objects (streaming up to 100MB)
+          <span class="card__sub">no full buffering in memory</span>
+        </li>
+        <li>
+          Isolates services by bucket
+          <span class="card__sub">{service}-{env} &middot; cross-service access blocked in API</span>
+        </li>
+        <li>
+          Indexes by time-prefixed key
+          <span class="card__sub">yyyy/MM/dd/HH/mm/name &middot; fast range scans</span>
+        </li>
+        <li>
+          Stores each unique hash once
+          <span class="card__sub">dedup &middot; re-uploads of same bytes reuse object</span>
+        </li>
+        <li>
+          Survives blips via Polly
+          <span class="card__sub">circuit breaker + 3x retry with jitter</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card card--green">
+      <div class="card__label">SQL Server &middot; metadata</div>
+      <div class="card__title">Files &amp; references</div>
+      <div class="card__tagline">Source of truth for ownership, lifecycle, and audit.</div>
+      <ul class="card__does">
+        <li>
+          <code>File</code> &mdash; one row per unique content
+          <span class="card__sub">hash, size, MIME, status (Pending &rarr; Confirmed &rarr; Deleted), TTL</span>
+        </li>
+        <li>
+          <code>FileReference</code> &mdash; one row per service that owns it
+          <span class="card__sub">enables sharing: 3 services, 1 object, 3 refs</span>
+        </li>
+        <li>
+          Tracks reference count for cleanup
+          <span class="card__sub">file kept until all refs released + 7-day grace</span>
+        </li>
+        <li>
+          <code>AuditLog</code> &mdash; every call recorded
+          <span class="card__sub">correlationId, serviceId, duration, status</span>
+        </li>
+        <li>
+          Monthly partitioned on <code>CreatedAt</code>
+          <span class="card__sub">fast queries &middot; easy archival / purge</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card card--amber">
+      <div class="card__label">Redis &middot; coordination</div>
+      <div class="card__title">Locks &amp; leader</div>
+      <div class="card__tagline">Keeps multiple API instances from stepping on each other.</div>
+      <ul class="card__does">
+        <li>
+          Dedup lock during upload
+          <span class="card__sub">dedup:{hash} &middot; 5s TTL &middot; prevents race on same content</span>
+        </li>
+        <li>
+          Leader election for cleanup worker
+          <span class="card__sub">cleanup:leader &middot; 70 min TTL &middot; only one instance sweeps</span>
+        </li>
+        <li>
+          Degrades gracefully when down
+          <span class="card__sub">upload still succeeds &middot; logs warning, skips dedup</span>
+        </li>
+        <li>
+          Health-checked on readiness probe
+          <span class="card__sub">/health/ready returns 503 if Redis unreachable</span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  import elkLayouts from 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs';
+
+  const config = {
+    fitPadding: 32, minHeight: 360, maxHeightPx: 720, maxHeightVh: 0.7,
+    maxInitialZoom: 1.8, minZoom: 0.2, maxZoom: 5, zoomStep: 0.14, readabilityFloor: 0.6
+  };
+  const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+  let activeDrag = null;
+  addEventListener('mousemove', (e) => activeDrag?.onMove(e));
+  addEventListener('mouseup', () => { activeDrag?.onEnd(); activeDrag = null; });
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    || (matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.getAttribute('data-theme') !== 'light');
+
+  mermaid.registerLayoutLoaders(elkLayouts);
+  mermaid.initialize({
+    startOnLoad: false, theme: 'base', look: 'classic', layout: 'elk',
+    themeVariables: {
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontSize: '18px',
+      primaryColor: isDark ? '#162438' : '#e8eef4',
+      primaryBorderColor: isDark ? '#4a90d9' : '#1a5fa8',
+      primaryTextColor: isDark ? '#c8d8e8' : '#1a2a3a',
+      lineColor: isDark ? '#8090a8' : '#5a7090'
+    }
+  });
+
+  function initDiagram(shell) {
+    const wrap = shell.querySelector('.mermaid-wrap');
+    const viewport = shell.querySelector('.mermaid-viewport');
+    const canvas = shell.querySelector('.mermaid-canvas');
+    const source = shell.querySelector('.diagram-source');
+    const label = shell.querySelector('.zoom-label');
+    if (!wrap || !viewport || !canvas || !source || !label) return;
+
+    let zoom = 1, fitMode = 'contain', panX = 0, panY = 0, svgW = 0, svgH = 0;
+    let sx = 0, sy = 0, spx = 0, spy = 0;
+    let touchDist = 0, touchCx = 0, touchCy = 0;
+
+    function constrainPan() {
+      const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
+      const rW = svgW * zoom, rH = svgH * zoom, pad = config.fitPadding;
+      panX = (rW + pad * 2 <= vpW) ? (vpW - rW) / 2 : clamp(panX, vpW - rW - pad, pad);
+      panY = (rH + pad * 2 <= vpH) ? (vpH - rH) / 2 : clamp(panY, vpH - rH - pad, pad);
+    }
+    function applyTransform() {
+      const svg = canvas.querySelector('svg');
+      if (!svg || !svgW) return;
+      constrainPan();
+      svg.style.width = (svgW * zoom) + 'px';
+      svg.style.height = (svgH * zoom) + 'px';
+      canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+      label.textContent = Math.round(zoom * 100) + '% \u2014 ' + fitMode;
+    }
+    function canPan() {
+      const rW = svgW * zoom, rH = svgH * zoom;
+      return rW + config.fitPadding * 2 > viewport.clientWidth
+          || rH + config.fitPadding * 2 > viewport.clientHeight;
+    }
+    function computeSmartFit() {
+      const vpW = viewport.clientWidth, vpH = viewport.clientHeight;
+      const aW = Math.max(80, vpW - config.fitPadding * 2);
+      const aH = Math.max(80, vpH - config.fitPadding * 2);
+      const contain = Math.min(aW / svgW, aH / svgH);
+      let z = contain, mode = 'contain';
+      if (contain < config.readabilityFloor) {
+        const chartR = svgH / svgW, vpR = vpH / Math.max(vpW, 1);
+        if (chartR >= vpR) { z = aW / svgW; mode = 'width-priority'; }
+        else { z = aH / svgH; mode = 'height-priority'; }
+      }
+      return { zoom: clamp(z, config.minZoom, config.maxInitialZoom), mode };
+    }
+    function fitDiagram() {
+      if (!svgW) return;
+      const fit = computeSmartFit();
+      zoom = fit.zoom; fitMode = fit.mode;
+      panX = (viewport.clientWidth - svgW * zoom) / 2;
+      panY = (viewport.clientHeight - svgH * zoom) / 2;
+      applyTransform();
+    }
+    function zoomAround(factor, cx, cy) {
+      const next = clamp(zoom * factor, config.minZoom, config.maxZoom);
+      const ratio = next / zoom;
+      panX = cx - ratio * (cx - panX);
+      panY = cy - ratio * (cy - panY);
+      zoom = next; fitMode = 'custom';
+      applyTransform();
+    }
+    function readSvgNaturalSize(svg) {
+      let w = 0, h = 0;
+      if (svg.viewBox?.baseVal?.width > 0) { w = svg.viewBox.baseVal.width; h = svg.viewBox.baseVal.height; }
+      if (!w) { w = parseFloat(svg.getAttribute('width')) || 0; h = parseFloat(svg.getAttribute('height')) || 0; }
+      if (!w) { const b = svg.getBBox(); w = b.width; h = b.height; }
+      if (!w) { const r = svg.getBoundingClientRect(); w = r.width || 1000; h = r.height || 500; }
+      if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      return { w, h };
+    }
+    function setAdaptiveHeight() {
+      if (!svgW) return;
+      const usableW = Math.max(280, wrap.getBoundingClientRect().width - 2);
+      const idealH = (svgH / svgW) * usableW + config.fitPadding * 2;
+      const maxVp = Math.floor(innerHeight * config.maxHeightVh);
+      const hardMax = Math.min(config.maxHeightPx, Math.max(config.minHeight + 40, maxVp));
+      wrap.style.height = Math.round(clamp(idealH, config.minHeight, hardMax)) + 'px';
+    }
+    function openInNewTab() {
+      const svg = canvas.querySelector('svg');
+      if (!svg) return;
+      const clone = svg.cloneNode(true);
+      clone.style.width = ''; clone.style.height = '';
+      const bg = isDark ? '#0d1421' : '#f0f4f8';
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Diagram</title>
+        <style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+        background:${bg};padding:40px;box-sizing:border-box}
+        svg{max-width:100%;max-height:90vh;height:auto}</style>
+        </head><body>${clone.outerHTML}</body></html>`;
+      open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
+    }
+    async function render() {
+      try {
+        const code = source.textContent.trim();
+        if (!code) { label.textContent = 'Error: Empty'; return; }
+        const id = 'diagram-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+        const { svg } = await mermaid.render(id, code);
+        canvas.innerHTML = svg;
+        const svgNode = canvas.querySelector('svg');
+        if (!svgNode) { label.textContent = 'Error: No SVG'; return; }
+        const size = readSvgNaturalSize(svgNode);
+        svgW = size.w; svgH = size.h;
+        svgNode.removeAttribute('width');
+        svgNode.removeAttribute('height');
+        svgNode.style.maxWidth = 'none';
+        svgNode.style.display = 'block';
+        setAdaptiveHeight();
+        fitDiagram();
+      } catch (err) {
+        console.error('Mermaid render failed:', err);
+        label.textContent = 'Error: ' + (err.message || 'Render');
+      }
+    }
+
+    const actions = {
+      'zoom-in': () => zoomAround(1 + config.zoomStep, viewport.clientWidth / 2, viewport.clientHeight / 2),
+      'zoom-out': () => zoomAround(1 / (1 + config.zoomStep), viewport.clientWidth / 2, viewport.clientHeight / 2),
+      'zoom-fit': fitDiagram,
+      'zoom-expand': openInNewTab
+    };
+    Object.entries(actions).forEach(([action, handler]) => {
+      wrap.querySelector(`[data-action="${action}"]`)?.addEventListener('click', handler);
+    });
+    viewport.addEventListener('dblclick', fitDiagram);
+    viewport.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const rect = viewport.getBoundingClientRect();
+        const factor = e.deltaY < 0 ? 1 + config.zoomStep : 1 / (1 + config.zoomStep);
+        zoomAround(factor, e.clientX - rect.left, e.clientY - rect.top);
+        return;
+      }
+      if (canPan()) { e.preventDefault(); panX -= e.deltaX; panY -= e.deltaY; applyTransform(); }
+    }, { passive: false });
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.zoom-controls') || !canPan()) return;
+      wrap.classList.add('is-panning');
+      sx = e.clientX; sy = e.clientY; spx = panX; spy = panY;
+      e.preventDefault();
+      activeDrag = {
+        onMove: (ev) => { panX = spx + (ev.clientX - sx); panY = spy + (ev.clientY - sy); applyTransform(); },
+        onEnd: () => { wrap.classList.remove('is-panning'); }
+      };
+    });
+    new ResizeObserver(() => { if (svgW) { setAdaptiveHeight(); fitDiagram(); } }).observe(wrap);
+    render();
+  }
+  document.querySelectorAll('.diagram-shell').forEach(initDiagram);
+</script>
+</body>
+</html>
