@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 
+from auth import require_internal_key
 from services.minio_service import list_datasets, upload_csv_as_parquet
 
-router = APIRouter(prefix="/datasets")
+router = APIRouter(prefix="/datasets", dependencies=[Depends(require_internal_key)])
 
 
 @router.get("")

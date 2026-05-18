@@ -20,11 +20,12 @@ export interface ExecuteResponse {
 export interface Dataset {
   id?: string
   name?: string
-  key: string
-  size: number
-  lastModified: string
+  minioKey: string
+  rowCount?: number
+  sizeBytes?: number
   description?: string
   sourceType?: string
+  updatedAt?: string
 }
 
 export interface HistoryItem {

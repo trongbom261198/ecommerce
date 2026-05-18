@@ -203,13 +203,14 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       ANALYTICS_BUCKET: analytics-data
-      POSTGRES_HOST: postgres
+      POSTGRES_HOST: host.docker.internal
       POSTGRES_DB: ecommerce
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       SQL_TIMEOUT_SEC: "60"
       SCRIPT_TIMEOUT_SEC: "30"
       MAX_RESULT_ROWS: "10000"
+      INTERNAL_API_KEY: ${ANALYTICS_EXECUTOR_INTERNAL_KEY:-change-me-in-production}
     ports:
       - "8000:8000"
     deploy:

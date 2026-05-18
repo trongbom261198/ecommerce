@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     postgres_db: str = "ecommerce"
     postgres_user: str = "postgres"
     postgres_password: str = "postgres"
+    internal_api_key: str = "change-me-in-production"
 
     model_config = {"env_file": ".env", "case_sensitive": False}
 

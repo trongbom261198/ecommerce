@@ -1,22 +1,35 @@
 package com.ecommerce.analyticsservice.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 @Configuration
 public class AppConfig {
 
+    @Value("${analytics.executor.internal-api-key}")
+    private String executorApiKey;
+
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate tpl = new RestTemplate();
+        // Attach shared secret header on every call to analytics-executor
+        ClientHttpRequestInterceptor auth = (req, body, execution) -> {
+            req.getHeaders().set("X-Internal-Key", executorApiKey);
+            return execution.execute(req, body);
+        };
+        tpl.setInterceptors(List.of(auth));
+        return tpl;
     }
 
     @Bean

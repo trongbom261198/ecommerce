@@ -1,12 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import require_internal_key
 from models.execute_models import ExecuteRequest, ExecuteResponse
 from services.duckdb_service import execute_sql
 from services.python_sandbox import execute_python
 from services.r_executor import execute_r
 from config import settings
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_internal_key)])
 
 
 @router.post("/execute", response_model=ExecuteResponse)

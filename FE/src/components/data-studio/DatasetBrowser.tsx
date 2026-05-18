@@ -16,8 +16,8 @@ export default function DatasetBrowser({ onInsert }: Props) {
     staleTime: 60_000,
   })
 
-  const handleClick = (key: string) => {
-    const snippet = `SELECT *\nFROM read_parquet('s3://analytics-data/${key}')\nLIMIT 100;`
+  const handleClick = (minioKey: string) => {
+    const snippet = `SELECT *\nFROM read_parquet('s3://analytics-data/${minioKey}')\nLIMIT 100;`
     onInsert(snippet)
   }
 
@@ -47,13 +47,13 @@ export default function DatasetBrowser({ onInsert }: Props) {
           renderItem={(item) => (
             <List.Item
               style={{ cursor: 'pointer', padding: '4px 0', borderBottom: 'none' }}
-              onClick={() => handleClick(item.key)}
+              onClick={() => handleClick(item.minioKey)}
             >
-              <Tooltip title={`Click để insert SQL snippet\n${item.key}`} placement="right">
+              <Tooltip title={`Click để insert SQL snippet\n${item.minioKey}`} placement="right">
                 <Space size={6}>
                   <FileOutlined style={{ color: '#2563eb', fontSize: 12 }} />
                   <Text style={{ fontSize: 12 }} ellipsis>
-                    {item.key.split('/').pop()}
+                    {item.minioKey?.split('/').pop()}
                   </Text>
                 </Space>
               </Tooltip>

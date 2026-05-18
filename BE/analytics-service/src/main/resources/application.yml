@@ -27,6 +27,7 @@ spring:
 analytics:
   executor:
     url: ${ANALYTICS_EXECUTOR_URL:http://localhost:8000}
+    internal-api-key: ${ANALYTICS_EXECUTOR_INTERNAL_KEY:change-me-in-production}
 
 management:
   endpoints:
