@@ -8,8 +8,22 @@ import pandas as pd
 from models.execute_models import ExecuteResponse
 from config import settings
 
+# --- Strategy dispatch -------------------------------------------------
+# EXECUTION_MODE=subprocess  → chạy trực tiếp trong process này (dev only)
+# EXECUTION_MODE=k8s         → tạo K8S Job cô lập (production)
+# ----------------------------------------------------------------------
+
+def execute_python(code: str, timeout: int) -> ExecuteResponse:
+    if settings.execution_mode == "k8s":
+        from services.k8s_sandbox import execute_python_k8s
+        return execute_python_k8s(code, timeout)
+    return _execute_subprocess(code, timeout)
+
+
+# --- Subprocess sandbox (dev) -----------------------------------------
 # Block only the most dangerous builtins; keep __import__ so `import pandas` works.
-# Security relies on Docker container isolation — not Python builtins alone.
+# WARNING: Security relies on Docker container isolation — NOT Python builtins alone.
+# An attacker can still read env vars, make network calls, fork processes.
 _BLOCKED = {"open", "exec", "eval", "compile", "input"}
 
 _raw = __builtins__ if isinstance(__builtins__, dict) else vars(__builtins__)
@@ -22,7 +36,7 @@ def _captured_print(*args, **kwargs):
     _print_lines.append(" ".join(str(a) for a in args))
 
 
-def execute_python(code: str, timeout: int) -> ExecuteResponse:
+def _execute_subprocess(code: str, timeout: int) -> ExecuteResponse:
     start = time.monotonic()
     _print_lines.clear()
 

@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     postgres_password: str = "postgres"
     internal_api_key: str = "change-me-in-production"
 
+    # Sandbox execution mode: "subprocess" (dev) | "k8s" (prod)
+    execution_mode: str = "subprocess"
+    k8s_namespace: str = "default"
+    k8s_sandbox_image: str = "analytics-sandbox:latest"
+    k8s_job_ttl_sec: int = 60         # Auto-delete Job after N seconds
+    k8s_poll_interval_sec: float = 0.5
+
     model_config = {"env_file": ".env", "case_sensitive": False}
 
 

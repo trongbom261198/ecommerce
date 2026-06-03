@@ -34,13 +34,13 @@ public class PageResponse<T> {
      * @return a populated {@code PageResponse}
      */
     public static <T> PageResponse<T> from(Page<T> springPage) {
-        return PageResponse.<T>builder()
-                .content(springPage.getContent())
-                .page(springPage.getNumber())
-                .size(springPage.getSize())
-                .totalElements(springPage.getTotalElements())
-                .totalPages(springPage.getTotalPages())
-                .last(springPage.isLast())
-                .build();
+        PageResponse<T> response = new PageResponse<>();
+        response.setContent(springPage.getContent());
+        response.setPage(springPage.getNumber());
+        response.setSize(springPage.getSize());
+        response.setTotalElements(springPage.getTotalElements());
+        response.setTotalPages(springPage.getTotalPages());
+        response.setLast(springPage.isLast());
+        return response;
     }
 }
